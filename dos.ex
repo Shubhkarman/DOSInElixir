@@ -1,15 +1,57 @@
+defmodule Parent do
+  use Supervisor
+
+  def start_link(limits) do
+    Supervisor.start_link(__MODULE__, limits)
+  end
+
+  def init(limits) do
+    children = Enum.map(limits, fn(limit_num) ->
+      worker(Child, [limit_num], [id: limit_num, restart: :permanent])
+    end)
+
+    supervise(children, strategy: :one_for_one)
+  end
+end
+
+defmodule Child do
+  def start_link(limit) do
+    pid = spawn_link(__MODULE__, :init, [limit])
+    {:ok, pid}
+  end
+
+  def init(limit) do
+    IO.puts "Start child with limit #{limit} pid #{inspect self()}"
+    loop(limit)
+  end
+
+  def loop(0), do: :ok
+  def loop(n) when n > 0 do
+    IO.puts "Process #{inspect self()} counter #{n}"
+    Process.sleep 500
+    loop(n-1)
+  end
+end
+
+
+Parent.start_link([2,3,5])
+
+Process.sleep 10_000
+
+
+
+
+
+
+
+
+
+
 defmodule Recursion do
   def main do
-#    n1 = IO.gets "Input1 "
-#    n1 = String.trim(n1)
-#    n1 = String.to_integer(n1)    # convert string to integer
-#
-#    n2 = IO.gets "Input2 "
-#    n2 = String.trim(n2)
-#    n2 = String.to_integer(n2)
 
     start = :os.system_time(:nanosecond)
-    print_multiple_times(1, 100000)
+    #print_multiple_times(1, 100000)
     stop = :os.system_time(:nanosecond) - start
     IO.puts "Time taken linearly - " <> Integer.to_string(stop)
 

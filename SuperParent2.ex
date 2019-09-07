@@ -1,41 +1,25 @@
 defmodule Parent do
-  def spawn_link(limits) do
-    spawn_link(__MODULE__, :init, [limits])
+  use Supervisor
+
+  def start_link(limits) do
+    Supervisor.start_link(__MODULE__, limits)
   end
 
   def init(limits) do
-    Process.flag :trap_exit, true
+    children = Enum.map(limits, fn(limit_num) ->
+      worker(Child, [limit_num], [id: limit_num, restart: :permanent])
+    end)
 
-    children_pids = Enum.map(limits, fn(limit_num) ->
-      pid = run_child(limit_num)
-      {pid, limit_num}
-    end) |> Enum.into(%{})
-
-    loop(children_pids)
-  end
-
-  def loop(children_pids) do
-    receive do
-      {:EXIT, pid, _} = msg->
-        IO.puts "Parent got message: #{inspect msg}"
-
-        {limit, children_pids} = pop_in children_pids[pid]
-        new_pid = run_child(limit)
-
-        children_pids = put_in children_pids[new_pid], limit
-
-        IO.puts "Restart children #{inspect pid}(limit #{limit}) with new pid #{inspect new_pid}"
-
-        loop(children_pids)
-    end
-  end
-
-  def run_child(limit) do
-    spawn_link(Child, :init, [limit])
+    supervise(children, strategy: :one_for_one)
   end
 end
 
 defmodule Child do
+  def start_link(limit) do
+    pid = spawn_link(__MODULE__, :init, [limit])
+    {:ok, pid}
+  end
+
   def init(limit) do
     IO.puts "Start child with limit #{limit} pid #{inspect self()}"
     loop(limit)
@@ -49,6 +33,7 @@ defmodule Child do
   end
 end
 
-Parent.init([2,10])
+
+Parent.start_link([2,3,5])
 
 Process.sleep 10_000
