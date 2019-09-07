@@ -1,17 +1,23 @@
 defmodule Recursion do
   def main do
-    n1 = IO.gets "Input1 "
-    n1 = String.trim(n1)
-    n1 = String.to_integer(n1)    # convert string to integer
-
-    n2 = IO.gets "Input2 "
-    n2 = String.trim(n2)
-    n2 = String.to_integer(n2)
+#    n1 = IO.gets "Input1 "
+#    n1 = String.trim(n1)
+#    n1 = String.to_integer(n1)    # convert string to integer
+#
+#    n2 = IO.gets "Input2 "
+#    n2 = String.trim(n2)
+#    n2 = String.to_integer(n2)
 
     start = :os.system_time(:nanosecond)
-    print_multiple_times(n1, n2)
+    print_multiple_times(1, 100000)
     stop = :os.system_time(:nanosecond) - start
-    IO.puts "Time taken " <> Integer.to_string(stop)
+    IO.puts "Time taken linearly - " <> Integer.to_string(stop)
+
+    start2 = :os.system_time(:nanosecond)
+    print_multiple_times_parallel(1, 100000)
+    stop2 = :os.system_time(:nanosecond) - start2
+    IO.puts "Time taken in parallel - " <> Integer.to_string(stop2)
+
 
   end
   #####################################################################
@@ -33,6 +39,27 @@ defmodule Recursion do
     end
 
     print_multiple_times(n1+1, n2)
+  end
+
+  #####################################################################
+  def print_multiple_times_parallel(n1, n2) when n1 == n2 do
+    s = Integer.to_string(n1)   #IO.puts "Integer #{is_integer(s)}"
+    len = String.length(s)
+
+    if rem(len, 2)==0 do
+      spawn fn() -> permute(s, n1) end
+    end
+  end
+
+  def print_multiple_times_parallel(n1, n2) do
+    s = Integer.to_string(n1)   #IO.puts "Integer #{is_integer(s)}"
+    len = String.length(s)
+
+    if rem(len, 2)==0 do
+      spawn fn() -> permute(s, n1) end
+    end
+
+    print_multiple_times_parallel(n1+1, n2)
   end
   #####################################################################
   def permute(s, num) do

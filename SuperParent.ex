@@ -6,7 +6,7 @@ defmodule Parent do
   def init(limits) do
     Process.flag :trap_exit, true
 
-    Enum.each(limits, fn(limit_num) ->
+    Enum.each(limits, fn(limit_num) ->#for each
       spawn_link(Child, :init, [limit_num])
     end)
 
@@ -31,7 +31,7 @@ defmodule Child do
   def loop(0), do: :ok
   def loop(n) when n > 0 do
     IO.puts "Process #{inspect self()} counter #{n}"
-    Process.sleep 500
+    Process.sleep 2000
     loop(n-1)
   end
 end
@@ -39,4 +39,4 @@ end
 
 Parent.init([2,3,5])
 
-Process.sleep 2_000
+Process.sleep 2000

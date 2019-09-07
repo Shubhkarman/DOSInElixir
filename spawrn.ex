@@ -9,14 +9,14 @@ defmodule Spawn do
 #    n2 = String.to_integer(n2)
 
     start = :os.system_time(:nanosecond)
-    spawn_link fn() ->mapPrint(1,10) end
+    mapPrint(1,10)#spawn_link fn() ->mapPrint(1,10) end
     stop = :os.system_time(:nanosecond) - start
     IO.puts "time taken " <>  Integer.to_string(stop)
 
   end
 
   def mapPrint(n1, n2) do
-    Enum.map(n1..n2, fn number -> spawn_link(fn -> doSome end) end)
+    Enum.map(n1..n2, fn number -> spawn(fn -> doSome end) end)
 
   end
 
